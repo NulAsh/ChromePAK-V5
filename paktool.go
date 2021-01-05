@@ -100,7 +100,7 @@ func unpack(path string) {
 	}
 	defer f.Close()
 
-	// 检查文件头
+	// Check the file header
 	var h PakHeader
 	err = binary.Read(f, binary.LittleEndian, &h)
 	if h.Version != PakVersion || h.Encodeing != PakEncoding {
@@ -108,7 +108,7 @@ func unpack(path string) {
 	}
 	// fmt.Printf("%+v\n", h)
 
-	// 加载识别数据库
+	// Load recognition database
 	db, err := Asset("assets/res_sha1.json")
 	var json_db map[string]string
 	json.Unmarshal(db, &json_db)
@@ -119,32 +119,32 @@ func unpack(path string) {
 
 	var r PakEntryRaw
 	for i := 0; i < int(h.ResourceCount); i++ {
-		// 读取索引
+		// Read index
 		f.Seek(int64(binary.Size(h)+i*binary.Size(r)), io.SeekStart)
 
 		var e PakEntry
 		binary.Read(f, binary.LittleEndian, &e)
 
-		// 读取内容
+		// Read content
 		f.Seek(int64(e.FileOffset), io.SeekStart)
 
 		data := make([]byte, e.NextFileOffset-e.FileOffset)
 		f.Read(data)
 
-		// 自动判断名称
+		// Automatically determine the name
 		path, err := json_db[SHA1(data)]
 		if !err {
 			path = fmt.Sprintf("unknown/%d", e.ResourceId)
 		}
 
-		// 检查重复名称
+		// Check for duplicate names
 		_, ok := write_files[path]
 		if ok {
 			path = fmt.Sprintf("unknown/%d", e.ResourceId)
 		}
 		write_files[path] = true
 
-		// 写入文件
+		// Write file
 		fmt.Println("write " + path)
 		path = name + "/" + path
 		os.MkdirAll(filepath.Dir(path), os.ModePerm)
@@ -157,7 +157,7 @@ func unpack(path string) {
 	for i := 0; i < int(h.AliasCount); i++ {
 		var a PakAlias
 
-		// 读取索引
+		// Read index
 		f.Seek(int64(binary.Size(h)+int(h.ResourceCount+1)*binary.Size(r)+i*binary.Size(a)), io.SeekStart)
 
 		binary.Read(f, binary.LittleEndian, &a)
@@ -205,7 +205,7 @@ func repack(path string) {
 	}
 	defer f.Close()
 
-	// 写入文件头
+	// Write file header
 	var h PakHeader
 	h.Version = PakVersion
 	h.Encodeing = PakEncoding
@@ -216,7 +216,7 @@ func repack(path string) {
 	var r PakEntryRaw
 	var a PakAlias
 
-	//写入entry
+	//Write entry
 	var offset = uint32(binary.Size(h)) + uint32(h.ResourceCount+1)*uint32(binary.Size(r)) + uint32(h.AliasCount)*uint32(binary.Size(a))
 	for _, v := range result.Entry {
 		r.ResourceId = v.ResourceId
@@ -226,12 +226,12 @@ func repack(path string) {
 		// fmt.Printf("%+v %+v  %+v \n", i, offset, GetFileSize(v.Path))
 	}
 
-	//写入entry末尾
+	//Write to the end of entry
 	r.ResourceId = 0
 	r.FileOffset = offset
 	binary.Write(f, binary.LittleEndian, &r)
 
-	//写入alias
+	//Write alias
 	for _, v := range result.Alias {
 		a.ResourceId = v.ResourceId
 		a.EntryIndex = v.EntryIndex
@@ -239,7 +239,7 @@ func repack(path string) {
 		// fmt.Printf("%+v %+v\n", a.ResourceId, a.EntryIndex)
 	}
 
-	//写入文件内容
+	//Write file content
 	for _, v := range result.Entry {
 		f.Write(ReadFromFile(v.Path))
 	}
@@ -258,7 +258,7 @@ func lang_unpack(path string) {
 	}
 	defer f.Close()
 
-	// 检查文件头
+	// Check the file header
 	var h PakHeader
 	err = binary.Read(f, binary.LittleEndian, &h)
 	if h.Version != PakVersion || h.Encodeing != PakEncoding {
@@ -269,13 +269,13 @@ func lang_unpack(path string) {
 
 	var r PakEntryRaw
 	for i := 0; i < int(h.ResourceCount); i++ {
-		// 读取索引
+		// Read index
 		f.Seek(int64(binary.Size(h)+i*binary.Size(r)), io.SeekStart)
 
 		var e PakEntry
 		binary.Read(f, binary.LittleEndian, &e)
 
-		// 读取内容
+		// Read content
 		f.Seek(int64(e.FileOffset), io.SeekStart)
 
 		data := make([]byte, e.NextFileOffset-e.FileOffset)
@@ -288,7 +288,7 @@ func lang_unpack(path string) {
 	for i := 0; i < int(h.AliasCount); i++ {
 		var a PakAlias
 
-		// 读取索引
+		// Read index
 		f.Seek(int64(binary.Size(h)+int(h.ResourceCount+1)*binary.Size(r)+i*binary.Size(a)), io.SeekStart)
 
 		binary.Read(f, binary.LittleEndian, &a)
@@ -320,7 +320,7 @@ func lang_repack(path string) {
 	}
 	defer f.Close()
 
-	// 写入文件头
+	// Write file header
 	var h PakHeader
 	h.Version = PakVersion
 	h.Encodeing = PakEncoding
@@ -331,7 +331,7 @@ func lang_repack(path string) {
 	var r PakEntryRaw
 	var a PakAlias
 
-	//写入entry
+	//Write entry
 	var offset = uint32(binary.Size(h)) + uint32(h.ResourceCount+1)*uint32(binary.Size(r)) + uint32(h.AliasCount)*uint32(binary.Size(a))
 	for _, v := range result.Entry {
 		r.ResourceId = v.ResourceId
@@ -341,12 +341,12 @@ func lang_repack(path string) {
 		// fmt.Printf("%+v %+v  %+v \n", i, offset, GetFileSize(v.Path))
 	}
 
-	//写入entry末尾
+	//Write to the end of entry
 	r.ResourceId = 0
 	r.FileOffset = offset
 	binary.Write(f, binary.LittleEndian, &r)
 
-	//写入alias
+	//Write alias
 	for _, v := range result.Alias {
 		a.ResourceId = v.ResourceId
 		a.EntryIndex = v.EntryIndex
@@ -354,7 +354,7 @@ func lang_repack(path string) {
 		// fmt.Printf("%+v %+v\n", a.ResourceId, a.EntryIndex)
 	}
 
-	//写入文件内容
+	//Write file content
 	for _, v := range result.Entry {
 		f.Write([]byte(v.Text))
 	}
