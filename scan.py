@@ -26,9 +26,9 @@ def scan_grd():
                 fullname = os.path.join(parent, filename)
                 path = fullname[len(src_path) + 1:]
                 grd_list.add(path)
-print("开始第一阶段，扫描目录下grd文件")
+print("Start the first stage, scan the grd file in the directory")
 scan_grd()
-print(("共发现%d个grd文件" % len(grd_list)))
+print(("%d grd files found" % len(grd_list)))
 
 
 def scan_res():
@@ -54,9 +54,9 @@ def scan_res():
                         res_list.add(file)
 
         print(i + 1, grd_file, len(res_list))
-print("开始第二阶段，解析grd文件")
+print("Start the second stage, parsing the grd file")
 scan_res()
-print(("共发现%d个资源文件" % len(res_list)))
+print(("%d resource files found" % len(res_list)))
 # print(res_list)
 
 try:
@@ -89,7 +89,7 @@ def hash_res():
         sha1_res_file(res_file)
         print(i + 1, len(res_sha1), res_file)
 
-print("开始第三阶段，sha1资源文件")
+print("Start the third stage, sha1 resource file")
 hash_res()
 save()
-print("完成")
+print("Complete")
